@@ -131,7 +131,7 @@ only-hash, and progress/status related flags) will change the final hash.
 		cmds.BoolOption(trickleOptionName, "t", "Use trickle-dag format for dag generation."),
 		cmds.BoolOption(onlyHashOptionName, "n", "Only chunk and hash - do not write to disk."),
 		cmds.BoolOption(wrapOptionName, "w", "Wrap files with a directory object."),
-		cmds.StringOption(chunkerOptionName, "s", "Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash").WithDefault("size-262144"),
+		cmds.StringOption(chunkerOptionName, "s", "Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash").WithDefault("size-1048576"),
 		cmds.BoolOption(pinOptionName, "Pin this object when adding.").WithDefault(true),
 		cmds.BoolOption(rawLeavesOptionName, "Use raw blocks for leaf nodes. (experimental)"),
 		cmds.BoolOption(noCopyOptionName, "Add the file using filestore. Implies raw-leaves. (experimental)"),
