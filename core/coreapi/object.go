@@ -28,20 +28,21 @@ const inputLimit = 2 << 20
 type ObjectAPI CoreAPI
 
 type Link struct {
-	Name, Hash string
-	Size       uint64
+	Name string `json:'name'`
+	Hash string `json:'hash'`
+	Size uint64 `json:'size'`
 }
 
 type Node struct {
-	Links []Link
-	Data  string
+	Links []Link `json:'links'`
+	Data  string `json:'data'`
 }
 
 type UF struct {
-	Type       int
-	FileSize   int64
-	BlockSizes []uint64
-	Data       []byte
+	Type       int      `json:'type'`
+	FileSize   int64    `json:'file_size'`
+	BlockSizes []uint64 `json:'block_size'`
+	Data       []byte   `json:'data'`
 }
 
 func (api *ObjectAPI) New(ctx context.Context, opts ...caopts.ObjectNewOption) (ipld.Node, error) {
