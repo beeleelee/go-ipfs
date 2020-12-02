@@ -28,21 +28,20 @@ const inputLimit = 2 << 20
 type ObjectAPI CoreAPI
 
 type Link struct {
-	Name string `json:'name'`
-	Hash string `json:'hash'`
-	Size uint64 `json:'size'`
+	Name, Hash string
+	Size       uint64
 }
 
 type Node struct {
-	Links []Link `json:'links'`
-	Data  string `json:'data'`
+	Links []Link
+	Data  string
 }
 
 type UF struct {
-	Type       int      `json:'type'`
-	FileSize   int64    `json:'file_size'`
-	BlockSizes []uint64 `json:'block_size'`
-	Data       []byte   `json:'data'`
+	Type       int
+	FileSize   int64
+	BlockSizes []uint64
+	Data       []byte
 }
 
 func (api *ObjectAPI) New(ctx context.Context, opts ...caopts.ObjectNewOption) (ipld.Node, error) {
@@ -87,11 +86,8 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("object node =======")
-		fmt.Printf("%#v\n", *node)
 		uf := new(UF)
 		if err := json.Unmarshal([]byte(node.Data), uf); err == nil {
-			fmt.Printf("%#v\n", *uf)
 			n := unixfs.NewFSNode(2)
 			if len(uf.Data) > 0 {
 				n.SetData(uf.Data)
@@ -139,8 +135,6 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 	if options.Pin {
 		defer api.blockstore.PinLock().Unlock()
 	}
-	fmt.Println("dagnode =======")
-	fmt.Printf("%#v", *dagnode)
 
 	err = api.dag.Add(ctx, dagnode)
 	if err != nil {
