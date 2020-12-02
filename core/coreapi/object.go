@@ -12,10 +12,11 @@ import (
 	"io/ioutil"
 
 	cid "github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipfs-pinner"
+	pin "github.com/ipfs/go-ipfs-pinner"
 	ipld "github.com/ipfs/go-ipld-format"
 	dag "github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-merkledag/dagutils"
+	"github.com/ipfs/go-unixfs"
 	ft "github.com/ipfs/go-unixfs"
 	coreiface "github.com/ipfs/interface-go-ipfs-core"
 	caopts "github.com/ipfs/interface-go-ipfs-core/options"
@@ -34,6 +35,13 @@ type Link struct {
 type Node struct {
 	Links []Link
 	Data  string
+}
+
+type UF struct {
+	Type       int
+	FileSize   int64
+	BlockSizes []uint64
+	Data       []byte
 }
 
 func (api *ObjectAPI) New(ctx context.Context, opts ...caopts.ObjectNewOption) (ipld.Node, error) {
@@ -78,7 +86,27 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("object node =======")
+		fmt.Printf("%#v\n", *node)
+		uf := new(UF)
+		if err := json.Unmarshal([]byte(node.Data), uf); err == nil {
+			fmt.Printf("%#v\n", *uf)
+			n := unixfs.NewFSNode(2)
+			if len(uf.Data) > 0 {
+				n.SetData(uf.Data)
+				n.UpdateFilesize(int64(len(uf.Data)))
+			} else if len(uf.BlockSizes) > 0 {
+				for _, size := range uf.BlockSizes {
+					n.AddBlockSize(size)
+				}
+			} else {
+				n.UpdateFilesize(uf.FileSize)
+			}
 
+			pb, _ := n.GetBytes()
+			node.Data = base64.StdEncoding.EncodeToString(pb)
+			options.DataType = "base64"
+		}
 		dagnode, err = deserializeNode(node, options.DataType)
 		if err != nil {
 			return nil, err
@@ -110,6 +138,8 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 	if options.Pin {
 		defer api.blockstore.PinLock().Unlock()
 	}
+	fmt.Println("dagnode =======")
+	fmt.Printf("%#v", *dagnode)
 
 	err = api.dag.Add(ctx, dagnode)
 	if err != nil {
